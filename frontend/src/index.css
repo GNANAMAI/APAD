@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-sans text-slate-800 antialiased;
+  }
+}
+
+@layer utilities {
+  .shadow-soft {
+    box-shadow: 0 4px 24px -4px rgba(37, 46, 130, 0.12);
+  }
+  .shadow-card {
+    box-shadow: 0 8px 32px -8px rgba(15, 23, 42, 0.1);
+  }
+  .shadow-glow {
+    box-shadow: 0 0 40px -8px rgba(69, 101, 240, 0.45);
+  }
+}
+
+/* Component classes — plain CSS for brand colors (avoids @apply + custom theme issues) */
+@layer components {
+  .page-bg {
+    @apply min-h-screen bg-gradient-to-br from-indigo-50 via-white to-indigo-50/80;
+  }
+
+  .mesh-bg {
+    background-image:
+      radial-gradient(at 20% 20%, rgba(69, 101, 240, 0.15) 0, transparent 50%),
+      radial-gradient(at 80% 10%, rgba(249, 115, 22, 0.1) 0, transparent 45%),
+      radial-gradient(at 60% 80%, rgba(99, 102, 241, 0.12) 0, transparent 50%);
+  }
+
+  .glass-nav {
+    @apply border-b border-white/60 bg-white/70 shadow-sm backdrop-blur-xl;
+  }
+
+  .card {
+    @apply rounded-2xl border border-white/80 bg-white/90 p-6 backdrop-blur-sm;
+    box-shadow: 0 8px 32px -8px rgba(15, 23, 42, 0.1);
+  }
+
+  .input-field {
+    @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:outline-none focus:ring-2;
+  }
+
+  .input-field:focus {
+    border-color: #4565f0;
+    --tw-ring-color: rgb(69 101 240 / 0.2);
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-xl px-6 py-3 font-semibold text-white transition focus:outline-none focus:ring-2 disabled:opacity-50;
+    background-image: linear-gradient(to right, #3348e6, #4565f0);
+    box-shadow: 0 4px 24px -4px rgba(37, 46, 130, 0.12);
+    --tw-ring-color: rgb(69 101 240 / 0.4);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background-image: linear-gradient(to right, #2a38cb, #3348e6);
+    box-shadow: 0 0 40px -8px rgba(69, 101, 240, 0.45);
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-xl border-2 bg-white px-6 py-3 font-semibold transition focus:outline-none focus:ring-2;
+    border-color: #c2d4ff;
+    color: #2a38cb;
+    --tw-ring-color: rgb(69 101 240 / 0.2);
+  }
+
+  .btn-secondary:hover {
+    border-color: #9bb6ff;
+    background-color: #eef4ff;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center rounded-xl px-4 py-2 font-medium text-slate-600 transition hover:bg-slate-100;
+  }
+
+  .btn-ghost:hover {
+    color: #2a38cb;
+  }
+
+  .nav-link {
+    @apply rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition;
+  }
+
+  .nav-link:hover {
+    background-color: #eef4ff;
+    color: #2a38cb;
+  }
+
+  .nav-link-active {
+    background-color: #dce8ff;
+    color: #2730a4;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide;
+  }
+
+  .badge-poc {
+    @apply badge bg-amber-100 text-amber-800 ring-1 ring-amber-200;
+  }
+
+  .badge-brand {
+    @apply badge;
+    background-color: #dce8ff;
+    color: #2a38cb;
+  }
+}

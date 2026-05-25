@@ -1,0 +1,16 @@
+# Root — shared; see also backend/.gitignore and frontend/.gitignore
+
+# Secrets (any folder)
+.env
+.env.*
+!.env.example
+
+# IDE & OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Cursor (if present in repo)
+.cursor/
