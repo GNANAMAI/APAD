@@ -71,9 +71,10 @@ App: http://localhost:5173
 | `CORS_ORIGINS` | Allowed frontend origins | `http://localhost:5173` |
 | `FRONTEND_BASE_URL` | Token links & OG redirects | `http://localhost:5173` |
 | `BACKEND_BASE_URL` | Preview URL base | `http://localhost:8000` |
-| `SMS_PROVIDER` | `mock` \| `msg91` \| `fast2sms` \| `twilio` | `mock` |
+| `SMS_PROVIDER` | `mock` (dev) \| `twilio` (Verify SMS) | `mock` |
+| `TWILIO_VERIFY_SERVICE_SID` | Required when `SMS_PROVIDER=twilio` | — |
 | `OTP_SIMULATION_MODE` | POC OTP mode | `true` |
-| `OTP_SHOW_ON_SCREEN` | Return OTP in API for UI | `true` |
+| `OTP_SHOW_ON_SCREEN` | Return OTP in API for UI (mock only) | `true` |
 | `SEED_DEMO_DATA` | Create admin + demo user + campaign | `true` |
 | `ADMIN_MOBILE` | Seeded admin phone | `9999999999` |
 

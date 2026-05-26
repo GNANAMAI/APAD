@@ -2,6 +2,7 @@ import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/layout/AuthLayout";
 import { Button } from "../../components/ui/Button";
+import PhoneInput from "../../components/ui/PhoneInput";
 import { apiPublic } from "../../lib/api";
 
 export default function Register() {
@@ -52,12 +53,9 @@ export default function Register() {
         </div>
         <div>
           <label className="mb-1.5 block text-sm font-medium text-slate-700">Mobile</label>
-          <input
-            className="input-field"
-            placeholder="10-digit mobile"
-            inputMode="numeric"
+          <PhoneInput
             value={form.mobile}
-            onChange={(e) => setForm({ ...form, mobile: e.target.value })}
+            onChange={(mobile) => setForm({ ...form, mobile })}
             required
           />
         </div>

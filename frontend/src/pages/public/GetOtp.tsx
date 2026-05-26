@@ -2,12 +2,13 @@ import { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/layout/AuthLayout";
 import { Button } from "../../components/ui/Button";
+import PhoneInput from "../../components/ui/PhoneInput";
 import { apiPublic } from "../../lib/api";
 import { saveFlow } from "../../lib/auth";
 
 export default function GetOtp() {
   const navigate = useNavigate();
-  const [mobile, setMobile] = useState("9876543210");
+  const [mobile, setMobile] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -38,11 +39,7 @@ export default function GetOtp() {
       <form onSubmit={submit} className="space-y-4">
         <div>
           <label className="mb-1.5 block text-sm font-medium text-slate-700">Mobile</label>
-          <input
-            className="input-field"
-            value={mobile}
-            onChange={(e) => setMobile(e.target.value)}
-          />
+          <PhoneInput value={mobile} onChange={setMobile} required />
         </div>
         {error && (
           <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>

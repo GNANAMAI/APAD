@@ -2,6 +2,7 @@ import { FormEvent, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/layout/AuthLayout";
 import { Button } from "../../components/ui/Button";
+import PhoneInput from "../../components/ui/PhoneInput";
 import { apiPublic } from "../../lib/api";
 import { saveFlow } from "../../lib/auth";
 
@@ -55,13 +56,7 @@ export default function Login() {
           <label className="mb-1.5 block text-sm font-medium text-slate-700">
             Mobile number
           </label>
-          <input
-            className="input-field"
-            placeholder="10-digit mobile"
-            value={mobile}
-            onChange={(e) => setMobile(e.target.value)}
-            required
-          />
+          <PhoneInput value={mobile} onChange={setMobile} required />
         </div>
         {error && (
           <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>

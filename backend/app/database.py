@@ -98,6 +98,50 @@ def _ensure_user_email_column() -> None:
         )
 
 
+def _migrate_mobiles_to_e164() -> None:
+    from sqlalchemy import inspect, text
+
+    from app.config import get_settings
+    from app.models.user import User
+    from app.utils.phone import normalize_mobile
+
+    settings = get_settings()
+    insp = inspect(engine)
+    if "users" not in insp.get_table_names():
+        return
+
+    if settings.is_postgres:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE users ALTER COLUMN mobile TYPE VARCHAR(20)"))
+
+    db = SessionLocal()
+    try:
+        for user in db.query(User).all():
+            if user.mobile.startswith("+"):
+                continue
+            digits = "".join(c for c in user.mobile if c.isdigit())
+            if len(digits) == 10:
+                new_mobile = f"+91{digits}"
+            else:
+                try:
+                    new_mobile = normalize_mobile(user.mobile, settings.default_phone_region)
+                except ValueError:
+                    continue
+            if new_mobile == user.mobile:
+                continue
+            conflict = (
+                db.query(User)
+                .filter(User.mobile == new_mobile, User.id != user.id)
+                .first()
+            )
+            if conflict:
+                continue
+            user.mobile = new_mobile
+        db.commit()
+    finally:
+        db.close()
+
+
 def init_db() -> None:
     from app import models  # noqa: F401
 
@@ -105,6 +149,7 @@ def init_db() -> None:
     _ensure_campaign_priority_column()
     _ensure_ad_completion_gate_column()
     _ensure_user_email_column()
+    _migrate_mobiles_to_e164()
 
 
 def check_db_connection() -> bool:

@@ -1,13 +1,15 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import OtpInput from "../../components/otp/OtpInput";
 import AuthLayout from "../../components/layout/AuthLayout";
 import { Button } from "../../components/ui/Button";
 import { apiPublic } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
-import { getFlow, clearFlow } from "../../lib/auth";
+import { getFlow, clearFlow, saveFlow } from "../../lib/auth";
 import { trackEvent } from "../../lib/analytics";
-import type { AuthResponse } from "../../types/api";
+import type { AuthResponse, SendOtpResponse } from "../../types/api";
+
+const RESEND_COOLDOWN_SEC = 60;
 
 export default function OtpVerification() {
   const navigate = useNavigate();
@@ -17,6 +19,16 @@ export default function OtpVerification() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resending, setResending] = useState(false);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = window.setInterval(() => {
+      setResendCooldown((s) => (s <= 1 ? 0 : s - 1));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [resendCooldown]);
 
   useEffect(() => {
     const guard = async () => {
@@ -47,6 +59,30 @@ export default function OtpVerification() {
     };
     guard();
   }, []);
+
+  const resendOtp = useCallback(async () => {
+    if (!flow.mobile || resendCooldown > 0 || resending) return;
+    setResending(true);
+    setError("");
+    try {
+      const { data } = await apiPublic.post<SendOtpResponse>("/api/otp/send-otp", {
+        mobile: flow.mobile,
+        token: flow.token,
+      });
+      saveFlow({
+        maskedMobile: data.masked_mobile,
+        otpForScreen: data.otp_for_screen ?? undefined,
+      });
+      setResendCooldown(RESEND_COOLDOWN_SEC);
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { detail?: string } } })?.response?.data
+          ?.detail || "Could not resend code. Please try again.";
+      setError(String(msg));
+    } finally {
+      setResending(false);
+    }
+  }, [flow.mobile, flow.token, resendCooldown, resending]);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -94,6 +130,8 @@ export default function OtpVerification() {
     );
   }
 
+  const showPocOtp = Boolean(flow.otpForScreen);
+
   return (
     <AuthLayout
       title="Enter verification code"
@@ -103,13 +141,14 @@ export default function OtpVerification() {
           : "Enter the 6-digit code sent to your mobile number"
       }
     >
-      {flow.otpForScreen && (
-        <div className="mb-6 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-          <p className="text-xs font-medium text-slate-500">APAD</p>
-          <p className="mt-1 text-sm text-slate-800">
-            Your verification code is{" "}
-            <span className="font-mono font-semibold tracking-widest">{flow.otpForScreen}</span>
-            . Valid for a few minutes. Do not share this code.
+      {showPocOtp && (
+        <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+          <p className="text-xs font-medium text-amber-800">Development mode</p>
+          <p className="mt-1 text-sm text-amber-900">
+            Your code is{" "}
+            <span className="font-mono font-semibold tracking-widest">
+              {flow.otpForScreen}
+            </span>
           </p>
         </div>
       )}
@@ -125,6 +164,23 @@ export default function OtpVerification() {
           {loading ? "Signing you in…" : "Continue"}
         </Button>
       </form>
+
+      <div className="mt-6 text-center">
+        {resendCooldown > 0 ? (
+          <p className="text-sm text-slate-500">
+            Resend code in {resendCooldown}s
+          </p>
+        ) : (
+          <button
+            type="button"
+            onClick={resendOtp}
+            disabled={resending}
+            className="text-sm font-medium text-apad-600 hover:text-apad-700 disabled:opacity-50"
+          >
+            {resending ? "Sending…" : "Resend code"}
+          </button>
+        )}
+      </div>
     </AuthLayout>
   );
 }

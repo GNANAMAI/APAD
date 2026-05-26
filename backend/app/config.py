@@ -49,6 +49,14 @@ class Settings(BaseSettings):
     twilio_account_sid: str = ""
     twilio_auth_token: str = ""
     twilio_from_number: str = ""
+    twilio_verify_service_sid: str = ""
+    twilio_otp_channel: str = "sms"
+
+    default_phone_region: str = "IN"
+
+    @property
+    def uses_twilio_verify(self) -> bool:
+        return self.sms_provider.lower() == "twilio"
 
     @property
     def cors_origin_list(self) -> list[str]:

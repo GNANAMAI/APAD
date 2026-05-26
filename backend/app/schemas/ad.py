@@ -1,4 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
+
+from app.utils.phone import normalize_mobile
 
 
 class AdWatchResponse(BaseModel):
@@ -21,6 +23,13 @@ class AdCompletedRequest(BaseModel):
     watch_duration: int = 0
     gate: str = "login"
 
+    @field_validator("mobile")
+    @classmethod
+    def validate_mobile(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        return normalize_mobile(v)
+
 
 class AdCompletedResponse(BaseModel):
     gate: str
@@ -38,3 +47,10 @@ class AdProgressRequest(BaseModel):
     mobile: str | None = None
     token: str | None = None
     seconds_watched: int = 0
+
+    @field_validator("mobile")
+    @classmethod
+    def validate_mobile(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        return normalize_mobile(v)

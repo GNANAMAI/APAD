@@ -2,6 +2,7 @@ import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/layout/AuthLayout";
 import { Button } from "../../components/ui/Button";
+import PhoneInput from "../../components/ui/PhoneInput";
 import { apiPublic } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import type { AuthResponse } from "../../types/api";
@@ -40,14 +41,7 @@ export default function AdminLogin() {
       <form onSubmit={submit} className="space-y-4">
         <div>
           <label className="mb-1.5 block text-sm font-medium text-slate-700">Mobile</label>
-          <input
-            className="input-field"
-            inputMode="numeric"
-            placeholder="9999999999"
-            value={mobile}
-            onChange={(e) => setMobile(e.target.value)}
-            required
-          />
+          <PhoneInput value={mobile} onChange={setMobile} required />
         </div>
         <div>
           <label className="mb-1.5 block text-sm font-medium text-slate-700">Password</label>

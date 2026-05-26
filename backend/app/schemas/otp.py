@@ -1,16 +1,27 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 from app.schemas.user import UserResponse
+from app.utils.phone import normalize_mobile
 
 
 class VerifyOtpRequest(BaseModel):
     mobile: str
     otp: str
 
+    @field_validator("mobile")
+    @classmethod
+    def validate_mobile(cls, v: str) -> str:
+        return normalize_mobile(v)
+
 
 class SendOtpRequest(BaseModel):
     mobile: str
     token: str | None = None
+
+    @field_validator("mobile")
+    @classmethod
+    def validate_mobile(cls, v: str) -> str:
+        return normalize_mobile(v)
 
 
 class SendOtpResponse(BaseModel):

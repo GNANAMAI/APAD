@@ -9,6 +9,16 @@ from app.models.user import User
 from app.services.ad_completion_tracker import completed_campaign_ids
 from app.services.ad_gates import GATE_LOGIN, GATE_OTP_REQUEST, VALID_GATES
 from app.services.audience_matching import select_campaign_for_user
+from app.utils.phone import normalize_mobile
+
+
+def _normalize_mobile_param(mobile: str | None) -> str | None:
+    if not mobile:
+        return None
+    try:
+        return normalize_mobile(mobile)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Invalid mobile number") from exc
 
 
 def _load_user_from_token(db: Session, token: str) -> User:
@@ -46,6 +56,7 @@ def _campaign_for_gate(db: Session, user: User, gate: str, token_val: str | None
 def resolve_context_for_gate(
     db: Session, token: str | None, mobile: str | None, gate: str
 ) -> tuple[User, Campaign, str | None]:
+    mobile = _normalize_mobile_param(mobile)
     if gate not in VALID_GATES:
         raise HTTPException(status_code=400, detail="Invalid ad gate")
 

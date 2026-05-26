@@ -22,7 +22,3 @@ def generate_token_string() -> str:
     return "tk_" + secrets.token_urlsafe(16)
 
 
-def mask_mobile(mobile: str) -> str:
-    if len(mobile) < 4:
-        return "****"
-    return f"+91 *****{mobile[-4:]}"

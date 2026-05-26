@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import PageHeader from "../../components/ui/PageHeader";
 import Card from "../../components/ui/Card";
 import FormField from "../../components/ui/FormField";
+import PhoneInput from "../../components/ui/PhoneInput";
 import { Button } from "../../components/ui/Button";
 import { api } from "../../lib/api";
 import type { User } from "../../types/api";
@@ -72,12 +73,9 @@ export default function Users() {
           </FormField>
 
           <FormField label="Mobile" required>
-            <input
-              className="input-field"
-              inputMode="numeric"
-              placeholder="9876543210"
+            <PhoneInput
               value={form.mobile}
-              onChange={(e) => set("mobile", e.target.value)}
+              onChange={(mobile) => set("mobile", mobile)}
               required
             />
           </FormField>
