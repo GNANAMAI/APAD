@@ -39,6 +39,13 @@ def login_lookup(db: Session, mobile: str) -> dict:
     }
 
 
+def get_user_by_mobile(db: Session, mobile: str) -> User:
+    user = db.query(User).filter(User.mobile == mobile).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
 def admin_login(db: Session, mobile: str, password: str) -> User:
     user = db.query(User).filter(User.mobile == mobile).first()
     if not user or user.role != "admin" or not user.password_hash:

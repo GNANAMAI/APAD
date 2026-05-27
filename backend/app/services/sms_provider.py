@@ -35,6 +35,10 @@ class MockProvider:
         logger.info("POC mock SMS -> %s | OTP %s", mobile, otp)
         return SendResult(delivered=False, channel="mock", preview_text=preview)
 
+    async def send_login_link(self, mobile: str, body: str) -> SendResult:
+        logger.info("POC mock login link SMS -> %s | %s", mobile, body)
+        return SendResult(delivered=False, channel="mock", preview_text=body)
+
     def check_otp(self, mobile: str, code: str) -> bool:
         return False
 
@@ -83,6 +87,24 @@ class TwilioVerifyProvider:
             if exc.status == 404:
                 return False
             raise
+
+    async def send_login_link(self, mobile: str, body: str) -> SendResult:
+        await asyncio.to_thread(self._send_login_link_sync, mobile, body)
+        return SendResult(delivered=True, channel="twilio_messaging", preview_text=body)
+
+    def _send_login_link_sync(self, mobile: str, body: str) -> None:
+        settings = get_settings()
+        if not settings.twilio_from_number:
+            raise RuntimeError(
+                "Login link SMS requires TWILIO_FROM_NUMBER (Twilio Programmable SMS)"
+            )
+        e164 = to_e164(mobile)
+        self._client.messages.create(
+            to=e164,
+            from_=settings.twilio_from_number,
+            body=body,
+        )
+        logger.info("Twilio login link SMS sent (ends %s)", e164[-4:])
 
 
 def get_sms_provider() -> MockProvider | TwilioVerifyProvider:

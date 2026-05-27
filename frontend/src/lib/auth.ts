@@ -9,6 +9,9 @@ export interface FlowContext {
   token?: string;
   otpForScreen?: string;
   maskedMobile?: string;
+  /** User opened ad flow from login SMS link — OTP entry stays on main site */
+  fromLogin?: boolean;
+  loginSmsPreview?: string;
 }
 
 export function saveAuth(token: string, user: User): void {

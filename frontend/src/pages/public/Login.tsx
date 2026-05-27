@@ -6,6 +6,16 @@ import PhoneInput from "../../components/ui/PhoneInput";
 import { apiPublic } from "../../lib/api";
 import { saveFlow } from "../../lib/auth";
 
+interface LoginResponse {
+  exists: boolean;
+  requires_admin_login?: boolean;
+  link_sent?: boolean;
+  masked_mobile?: string;
+  token?: string;
+  sms_preview?: string | null;
+  ad_preview_url?: string;
+}
+
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -13,16 +23,15 @@ export default function Login() {
   const [mobile, setMobile] = useState(preset);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [smsPreview, setSmsPreview] = useState<string | null>(null);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
+    setSmsPreview(null);
     setLoading(true);
     try {
-      const { data } = await apiPublic.post<{
-        exists: boolean;
-        requires_admin_login?: boolean;
-      }>("/api/login", { mobile });
+      const { data } = await apiPublic.post<LoginResponse>("/api/login", { mobile });
       if (!data.exists) {
         setError("Mobile not registered. Please create an account first.");
         return;
@@ -31,8 +40,22 @@ export default function Login() {
         setError("This number is for admin. Use Admin login instead.");
         return;
       }
-      saveFlow({ mobile });
-      navigate(`/ad-watch?mobile=${encodeURIComponent(mobile)}&gate=login`);
+      if (!data.link_sent) {
+        setError("Could not send the offer link. Try again.");
+        return;
+      }
+      saveFlow({
+        mobile,
+        token: data.token,
+        maskedMobile: data.masked_mobile,
+        loginSmsPreview: data.sms_preview ?? undefined,
+      });
+      if (data.sms_preview) {
+        setSmsPreview(data.sms_preview);
+      }
+      navigate("/otp-verification", {
+        state: { awaitingSmsLink: true, smsPreview: data.sms_preview },
+      });
     } catch {
       setError("Could not verify your number. Try again.");
     } finally {
@@ -43,7 +66,7 @@ export default function Login() {
   return (
     <AuthLayout
       title="Sign in"
-      subtitle="Enter your mobile number to view relevant offers and sign in securely."
+      subtitle="Enter your mobile number. We will text you a personalized offer link."
     >
       <p className="mb-4 text-center text-sm text-slate-500">
         Admin?{" "}
@@ -61,8 +84,14 @@ export default function Login() {
         {error && (
           <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
         )}
+        {smsPreview && (
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-700">
+            <p className="font-medium text-slate-800">Development — SMS preview</p>
+            <p className="mt-2 break-all font-mono">{smsPreview}</p>
+          </div>
+        )}
         <Button type="submit" fullWidth disabled={loading}>
-          {loading ? "Please wait…" : "Continue"}
+          {loading ? "Sending link…" : "Send offer link"}
         </Button>
       </form>
       <p className="mt-6 text-center text-sm text-slate-500">

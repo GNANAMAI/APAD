@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.schemas.otp import VerifyOtpRequest, VerifyOtpResponse
 from app.schemas.user import AdminLoginRequest, UserLogin, UserRegister, UserResponse
-from app.services import analytics_engine, auth_engine, otp_engine
+from app.services import analytics_engine, auth_engine, login_link_service, otp_engine
 from app.utils.jwt import create_access_token
 
 router = APIRouter(tags=["auth"])
@@ -18,9 +18,23 @@ def register(data: UserRegister, db: Session = Depends(get_db)):
 
 
 @router.post("/login")
-def login(data: UserLogin, db: Session = Depends(get_db)):
-    result = auth_engine.login_lookup(db, data.mobile)
-    analytics_engine.track_event(db, "login_lookup", metadata={"mobile": data.mobile})
+async def login(data: UserLogin, db: Session = Depends(get_db)):
+    lookup = auth_engine.login_lookup(db, data.mobile)
+    if not lookup["exists"]:
+        analytics_engine.track_event(db, "login_lookup", metadata={"mobile": data.mobile})
+        return lookup
+    if lookup.get("requires_admin_login"):
+        analytics_engine.track_event(db, "login_lookup", metadata={"mobile": data.mobile})
+        return lookup
+
+    user = auth_engine.get_user_by_mobile(db, data.mobile)
+    result = await login_link_service.send_login_link_sms(db, user)
+    analytics_engine.track_event(
+        db,
+        "login_link_sent",
+        user_id=user.id,
+        metadata={"mobile": data.mobile},
+    )
     return result
 
 

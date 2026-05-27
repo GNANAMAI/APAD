@@ -9,7 +9,7 @@ This document describes **how users move through the APAD platform** — Flow 1 
 ## Core rule
 
 ```
-Login → Ad 1 (login gate) → Generate OTP page → Ad 2 (otp_request gate) → OTP sent → Enter OTP → Portal
+Login → SMS offer link → (SMS path) Ad 1 → Ad 2 → OTP sent → Enter OTP on main site → Portal
 ```
 
 OTP **cannot** be sent until the server records `ad_completed` for the **second** ad (`gate=otp_request`).
@@ -52,31 +52,33 @@ flowchart TD
 
 ---
 
-## Flow 2 — Login with mobile → ad → OTP → portal
+## Flow 2 — Login → SMS offer link → ads in browser → OTP on main site
 
-**Use case:** User opens the app and logs in with mobile number (no token in URL).
+**Use case:** User signs in on the website; ads run from the SMS link; OTP is entered only on `/otp-verification`.
 
 ```mermaid
 flowchart TD
-  L[User /login]
-  M[Enter mobile]
-  N[/ad-watch?mobile=...]
-  O[Complete ad]
-  P[OTP confirmation + verification]
-  Q[Dashboard]
+  L[/login]
+  S[SMS with ad-preview link]
+  A[/ad-preview from SMS]
+  W[Two ads on link path]
+  O[OTP SMS]
+  V[/otp-verification on main site]
+  D[/dashboard]
 
-  L --> M --> N --> O --> P --> Q
+  L --> S --> A --> W --> O --> V --> D
 ```
 
 | Step | Route | What happens |
 | ---- | ----- | ------------ |
-| 1 | `/login` | Checks mobile exists via `POST /api/login` |
-| 2 | `/ad-watch?mobile=...&gate=login` | First personalized ad |
-| 3 | `/generate-otp` | Button starts second ad |
-| 4 | `/ad-watch?...&gate=otp_request` | Second ad → auto send OTP → verify |
-| 5 | `/dashboard` | Portal after OTP |
+| 1 | `/login` | `POST /api/login` → SMS with `{FRONTEND_BASE_URL}/ad-preview/tk_...?from=login` |
+| 2 | `/otp-verification` | User waits; opens SMS link on phone |
+| 3 | `/ad-preview/:token?from=login` | Landing (from SMS) |
+| 4 | `/ad-watch` → `/generate-otp` → second `/ad-watch` | Two ad gates |
+| 5 | `/link-complete` | OTP sent; no code entry on this page |
+| 6 | `/otp-verification` | User enters OTP → JWT → portal |
 
-Alternative entry: `/get-otp` (same as login continuation).
+`/get-otp` redirects to `/login`.
 
 ---
 

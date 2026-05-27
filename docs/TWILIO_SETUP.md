@@ -1,6 +1,13 @@
 # Twilio Verify — APAD login OTP
 
-End-user flow: **Register/Login → Ad 1 → Ad 2 → SMS OTP → Enter code → Dashboard**
+End-user flow: **Register/Login → offer link SMS → Ad 1 → Ad 2 (from link) → OTP SMS → Enter code on site → Dashboard**
+
+Two SMS types:
+
+| SMS | Twilio product | Env |
+| --- | -------------- | --- |
+| Offer + ad link (on login) | **Programmable SMS** | `TWILIO_FROM_NUMBER` |
+| OTP (after ads) | **Verify** | `TWILIO_VERIFY_SERVICE_SID` |
 
 ## Phone numbers
 
@@ -38,6 +45,10 @@ TWILIO_ACCOUNT_SID=ACxxxxxxxx
 TWILIO_AUTH_TOKEN=xxxxxxxx
 TWILIO_VERIFY_SERVICE_SID=VAxxxxxxxx
 TWILIO_OTP_CHANNEL=sms
+TWILIO_FROM_NUMBER=+1xxxxxxxx
+
+LOGIN_LINK_SMS_ENABLED=true
+LOGIN_LINK_MESSAGE_TEMPLATE=Hi {user_name}, {promo}. Tap to view your offer: {link}
 
 OTP_SIMULATION_MODE=false
 OTP_SHOW_ON_SCREEN=false
@@ -49,7 +60,7 @@ Install dependency: `pip install -r requirements.txt`
 
 1. Start API and frontend (`README.md`).
 2. Register or use demo user `9876543210`.
-3. `/login` → complete both ads → check phone for SMS → enter code on `/otp-verification`.
+3. `/login` → offer link SMS → open link on phone → complete both ads → OTP SMS → enter code on `/otp-verification` (main site, not the link tab).
 
 ## 4. Local POC (no Twilio)
 
@@ -59,7 +70,7 @@ OTP_SHOW_ON_SCREEN=true
 OTP_SIMULATION_MODE=true
 ```
 
-OTP appears on the verification screen instead of SMS.
+OTP appears on the verification screen instead of SMS. Login link text is logged and shown in the login/OTP UI as **SMS preview**.
 
 ## 5. Render
 

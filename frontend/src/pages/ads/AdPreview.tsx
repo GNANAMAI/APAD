@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { LinkButton } from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import { apiPublic } from "../../lib/api";
@@ -9,17 +9,19 @@ import type { AdWatchPayload } from "../../types/api";
 
 export default function AdPreview() {
   const { token } = useParams<{ token: string }>();
+  const [searchParams] = useSearchParams();
+  const fromLogin = searchParams.get("from") === "login";
   const [payload, setPayload] = useState<AdWatchPayload | null>(null);
 
   useEffect(() => {
     if (!token) return;
-    saveFlow({ token });
+    saveFlow({ token, fromLogin: fromLogin || undefined });
     trackEvent("preview_fetch", { token });
     apiPublic
       .get<AdWatchPayload>(`/api/ad/watch?token=${encodeURIComponent(token)}`)
       .then((r) => setPayload(r.data))
       .catch(() => setPayload(null));
-  }, [token]);
+  }, [token, fromLogin]);
 
   if (!token) return null;
 
@@ -39,7 +41,7 @@ export default function AdPreview() {
             />
             <p className="mt-4 text-slate-600">{payload.description}</p>
             <LinkButton
-              to={`/ad-watch?token=${encodeURIComponent(token)}&gate=login`}
+              to={`/ad-watch?token=${encodeURIComponent(token)}&gate=login${fromLogin ? "&from=login" : ""}`}
               fullWidth
               className="mt-8"
             >

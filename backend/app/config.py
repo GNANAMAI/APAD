@@ -52,6 +52,11 @@ class Settings(BaseSettings):
     twilio_verify_service_sid: str = ""
     twilio_otp_channel: str = "sms"
 
+    login_link_sms_enabled: bool = True
+    login_link_message_template: str = (
+        "Hi {user_name}, {promo}. Tap to view your offer: {link}"
+    )
+
     default_phone_region: str = "IN"
 
     @property

@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.models.ad_completion import AdCompletion
+from app.models.otp_log import OtpLog
 from app.services.ad_gates import GATE_LOGIN, GATE_OTP_REQUEST, VALID_GATES
 
 
@@ -26,10 +27,25 @@ def has_valid_completion(
     return _completion_query(db, user_id, token, gate).first() is not None
 
 
+def has_recent_otp_sent(db: Session, user_id: int) -> bool:
+    now = datetime.now(timezone.utc)
+    return (
+        db.query(OtpLog)
+        .filter(
+            OtpLog.user_id == user_id,
+            OtpLog.status == "sent",
+            OtpLog.expires_at > now,
+        )
+        .first()
+        is not None
+    )
+
+
 def get_flow_status(db: Session, user_id: int, token: str | None) -> dict:
     return {
         "login_ad_completed": has_valid_completion(db, user_id, token, GATE_LOGIN),
         "otp_ad_completed": has_valid_completion(db, user_id, token, GATE_OTP_REQUEST),
+        "otp_sent": has_recent_otp_sent(db, user_id),
     }
 
 

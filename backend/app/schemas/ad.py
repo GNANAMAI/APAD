@@ -41,6 +41,7 @@ class AdCompletedResponse(BaseModel):
 class AdFlowStatusResponse(BaseModel):
     login_ad_completed: bool
     otp_ad_completed: bool
+    otp_sent: bool = False
 
 
 class AdProgressRequest(BaseModel):

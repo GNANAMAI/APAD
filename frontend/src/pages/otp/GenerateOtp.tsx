@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import AuthLayout from "../../components/layout/AuthLayout";
 import { Button } from "../../components/ui/Button";
 import { apiPublic } from "../../lib/api";
@@ -7,7 +7,10 @@ import { getFlow } from "../../lib/auth";
 
 export default function GenerateOtp() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const flow = getFlow();
+  const fromLogin =
+    searchParams.get("from") === "login" || flow.fromLogin === true;
   const [ready, setReady] = useState(false);
   const [error, setError] = useState("");
 
@@ -37,10 +40,12 @@ export default function GenerateOtp() {
   }, []);
 
   const continueFlow = () => {
-    const q = flow.token
-      ? `token=${encodeURIComponent(flow.token)}&gate=otp_request`
-      : `mobile=${encodeURIComponent(flow.mobile!)}&gate=otp_request`;
-    navigate(`/ad-watch?${q}`);
+    const parts = flow.token
+      ? [`token=${encodeURIComponent(flow.token)}`]
+      : [`mobile=${encodeURIComponent(flow.mobile!)}`];
+    parts.push("gate=otp_request");
+    if (fromLogin) parts.push("from=login");
+    navigate(`/ad-watch?${parts.join("&")}`);
   };
 
   if (error) {

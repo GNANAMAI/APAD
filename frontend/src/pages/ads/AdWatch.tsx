@@ -20,6 +20,8 @@ export default function AdWatch() {
   const gate = parseGate(params.get("gate"));
   const token = params.get("token") || flow.token;
   const mobile = params.get("mobile") || flow.mobile;
+  const fromLogin =
+    params.get("from") === "login" || flow.fromLogin === true;
   const [payload, setPayload] = useState<AdWatchPayload | null>(null);
   const [error, setError] = useState("");
   const [completing, setCompleting] = useState(false);
@@ -37,7 +39,11 @@ export default function AdWatch() {
       .get<AdWatchPayload>(`/api/ad/watch?${parts.join("&")}`)
       .then((r) => {
         setPayload(r.data);
-        saveFlow({ mobile: r.data.user_mobile, token: token || undefined });
+        saveFlow({
+          mobile: r.data.user_mobile,
+          token: token || undefined,
+          fromLogin: fromLogin || undefined,
+        });
       })
       .catch((err: unknown) => {
         const msg =
@@ -61,7 +67,16 @@ export default function AdWatch() {
       await trackEvent("ad_completed", { token: token || undefined });
 
       if (gate === "login") {
-        navigate("/generate-otp");
+        if (fromLogin) {
+          const parts = ["from=login"];
+          if (token) parts.unshift(`token=${encodeURIComponent(token)}`);
+          else if (resolvedMobile) {
+            parts.unshift(`mobile=${encodeURIComponent(resolvedMobile)}`);
+          }
+          navigate(`/generate-otp?${parts.join("&")}`);
+        } else {
+          navigate("/generate-otp");
+        }
         return;
       }
 
@@ -72,9 +87,17 @@ export default function AdWatch() {
       saveFlow({
         mobile: resolvedMobile,
         token: token || undefined,
+        fromLogin: fromLogin || undefined,
         otpForScreen: otpRes.data.otp_for_screen ?? undefined,
         maskedMobile: otpRes.data.masked_mobile,
       });
+      if (fromLogin) {
+        const completeQ = resolvedMobile
+          ? `?mobile=${encodeURIComponent(resolvedMobile)}`
+          : "";
+        navigate(`/link-complete${completeQ}`);
+        return;
+      }
       navigate("/otp-verification");
     } catch (err: unknown) {
       const msg =

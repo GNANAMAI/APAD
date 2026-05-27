@@ -11,6 +11,7 @@ import AdWatch from "../pages/ads/AdWatch";
 import AdPreview from "../pages/ads/AdPreview";
 import OtpVerification from "../pages/otp/OtpVerification";
 import GenerateOtp from "../pages/otp/GenerateOtp";
+import LinkComplete from "../pages/otp/LinkComplete";
 import Dashboard from "../pages/portal/Dashboard";
 import Offers from "../pages/portal/Offers";
 import Recommendations from "../pages/portal/Recommendations";
@@ -35,6 +36,7 @@ export default function AppRoutes() {
         <Route path="/generate-otp" element={<GenerateOtp />} />
         <Route path="/otp-confirmation" element={<GenerateOtp />} />
         <Route path="/otp-verification" element={<OtpVerification />} />
+        <Route path="/link-complete" element={<LinkComplete />} />
         <Route
           path="/dashboard"
           element={
